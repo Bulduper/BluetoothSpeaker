@@ -23,6 +23,7 @@
 #define AUDIOIN A0
 
 #define VCC 5.063f
+#define LONG_PRESS_MS 2000
 
 float bat1_voltage, bat2_voltage, bat3_voltage;
 float bat_voltage_avg;
@@ -31,6 +32,8 @@ int currentBatteryLvl;
 
 bool isPaused;
 bool isMuted;
+
+long lastInterruptPressed, lastInterruptReleased;
 
 void buttonInterrupt();
 void measureVoltage();
@@ -173,7 +176,30 @@ void whiteLeds(byte Byte)
 
 void buttonInterrupt()
 {
-  isPaused = !isPaused;
-  digitalWrite(PAUSE,isPaused);
-  Serial.println("INT");
+  //debouncing
+  unsigned long now = micros(); 
+  if(now-lastInterruptReleased > 400*1000 && now-lastInterruptPressed>400*1000)
+  {
+    if(digitalRead(BTN)==HIGH)
+    {
+      lastInterruptPressed = now;
+    }
+
+    else if(digitalRead(BTN)==LOW)
+    {
+      lastInterruptReleased = now;
+
+      //short press
+      if(lastInterruptReleased - lastInterruptPressed < LONG_PRESS_MS)
+      {
+        isPaused = !isPaused;
+      }
+      //long press
+      else
+      {
+        //rgb on/off
+      }
+      
+    }
+  }
 }
