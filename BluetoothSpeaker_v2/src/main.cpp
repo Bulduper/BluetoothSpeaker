@@ -113,13 +113,15 @@ void measureVoltage()
 
 void updateBatteryLvl()
 {
-  const int deadBand = 0.02f;
+  const int deadBand = 0.03f;
   int i=0;
   while(bat_voltage_avg>batteryThresholds[i])
   {
     i++;
     if(i>=6)break;
   }
+  
+  //histeresis
   if(currentBatteryLvl<i)
   {
     if(bat_voltage_avg>batteryThresholds[i-1]+deadBand)currentBatteryLvl = i;
@@ -134,14 +136,11 @@ void updateBatteryLvl()
 void displayBatteryLvl()
 {
   whiteLeds((1<<currentBatteryLvl)-1);
-  Serial.println(currentBatteryLvl);
-
 }
 
 void whiteLeds(byte Byte)
 {
   int ledNo = 0;
-  Serial.println(Byte);
   while(ledNo<6)
   {
     switch (ledNo)
