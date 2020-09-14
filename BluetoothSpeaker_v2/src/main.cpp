@@ -72,10 +72,12 @@ void setup() {
 }
 
 void loop() {
-  Loop_10s();
-  dancingRGBs.getSpectrum();
+  //Loop_10s();
+  //dancingRGBs.getSpectrum();
+  dancingRGBs.readAudio();
   dancingRGBs.dance();
   //dancingRGBs.displayAllInConsole();
+  //dancingRGBs.displayIndexInConsole(1);
 
 
   //delay(1000);
@@ -88,13 +90,13 @@ void Loop_10s()
     measureVoltage();
     updateBatteryLvl();
     displayBatteryLvl();
-    Serial.print(bat1_voltage);
+    /*Serial.print(bat1_voltage);
     Serial.print("\t");
     Serial.print(bat2_voltage);
     Serial.print("\t");
     Serial.print(bat3_voltage);
     Serial.print("\n");
-    lastLoop_10s = millis();
+    */lastLoop_10s = millis();
   }
 
 }
@@ -210,7 +212,7 @@ void buttonInterrupt()
 {
   //debouncing
   unsigned long now = micros(); 
-  if(now-lastInterruptReleased > 400*1000 && now-lastInterruptPressed>400*1000)
+  if(now-lastInterruptReleased > 400000L && now-lastInterruptPressed>400000L)
   {
     if(digitalRead(BTN)==HIGH)
     {

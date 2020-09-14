@@ -1,56 +1,97 @@
 #include "DancingRGBs.h"
+#include <Arduino.h>
 
 DancingRGBs::DancingRGBs(int rPin, int gPin, int bPin)
 : r_pin(rPin), g_pin(gPin), b_pin(bPin)
 {
-    FFT = arduinoFFT();
 }
 
 
-void DancingRGBs::getSpectrum()
-{
-    getSamples(vReal, vImag, SAMPLES);
-    
-    // ++ FFT
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
-    // -- FFT
-
-}
-
-void DancingRGBs::getSamples(double* Re, double* Im, int samp)
+void DancingRGBs::readAudio()
 {
     ADCSRA = 0b11100101;      // set ADC to free running mode and set pre-scalar to 32 (0xe5)
     ADMUX = 0b00000000;       // use pin A0 and external voltage reference
 
-    // ++ Sampling
-   for(int i=0; i<samp; i++)
-    {
-      while(!(ADCSRA & 0x10));        // wait for ADC to complete current conversion ie ADIF bit set
-      ADCSRA = 0b11110101 ;               // clear ADIF bit so that ADC can do next operation (0xf5)
-      Serial.print(ADC);
-      Serial.print("\t");
-      int value = ADC - DC_OFFSET;                 // Read from ADC and subtract DC offset caused value
-    Serial.println(value);
-      Re[i]= value/8;                      // Copy to bins after compressing
-      Im[i] = 0;                         
-    }
-    // -- Sampling
+
+    while(!(ADCSRA & 0x10));        // wait for ADC to complete current conversion ie ADIF bit set
+    ADCSRA = 0b11110101 ;               // clear ADIF bit so that ADC can do next operation (0xf5)
+    //Serial.print(ADC);
+    //Serial.print("\t");
+    int value = ADC - DC_OFFSET;                 // Read from ADC and subtract DC offset caused value
+    audioAnalogValue = value;
+    addAmpToCache(value);
+    //Serial.println(value);
+
 }
 
-void DancingRGBs::displayAllInConsole()
+void DancingRGBs::addAmpToCache(float value)
 {
-    for(int i=0; i< SAMPLES; i++)
-    {
-        Serial.print(vReal[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    static int i;
+    amp_cache[i] = value;
+    i++;
+    if(i>=CACHE_SIZE)i=0;
 }
+
+float DancingRGBs::getMaxFromCache()
+{
+    float max = 0.0f;
+    for(int i=0; i<CACHE_SIZE; i++)
+    {
+        if(abs(amp_cache[i])>max)max = abs(amp_cache[i]);
+    }
+    return max;
+}
+
+float DancingRGBs::getIntensity()
+{
+    switch(currentMode)
+    {
+        case NOLEDS:
+        {
+            return 0.0f;
+            break;
+        }
+
+        case DANCE:
+        {
+            float intensity;
+            float maxFromCache = getMaxFromCache();
+            float relAmplitude = audioAnalogValue/maxFromCache;
+            float a, b;
+            
+            if(maxFromCache<minAudioInput) return calmIntensity;
+            a =(maxIntensity-minIntensity)/(maxAmplitude-minAmplitude);
+            b = maxIntensity - a*maxAmplitude;
+            intensity = a * relAmplitude + b;
+            intensity = constrain(intensity,calmIntensity, maxIntensity);
+            return intensity;
+            break;
+        }
+
+        case TRANSITION:
+        {
+            return transModeIntensity;
+            break;
+        }
+    }
+}
+
 
 void DancingRGBs::dance()
 {
-    if(vReal[5]>10)digitalWrite(r_pin,HIGH);
-    else digitalWrite(r_pin,LOW);
+    unsigned int now = millis();
+    float intensity = getIntensity();
+
+    analogWrite(r_pin,sin_half_sq(now,6000,0)*255*intensity);
+    analogWrite(g_pin,sin_half_sq(now,6000,60)*255*intensity);
+    analogWrite(b_pin,sin_half_sq(now,6000,120)*255*intensity);
+
+    //Serial.println(getMaxFromCache());
+}
+
+double sin_half_sq(long x, unsigned long T, int offset)
+{
+    double sinus = sin( ( (double)x / (double)T + (double)offset / 360.0) * 2*PI);
+    //if(sinus<0.0)sinus = 0.0;
+    return sinus*sinus;
 }
