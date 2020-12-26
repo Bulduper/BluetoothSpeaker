@@ -4,24 +4,23 @@
 DancingRGBs::DancingRGBs(int rPin, int gPin, int bPin)
 : r_pin(rPin), g_pin(gPin), b_pin(bPin)
 {
+    a =(maxIntensity-minIntensity)/(A_upperThreshold-A_lowerThreshold);
+    b = maxIntensity - a * A_upperThreshold;
 }
 
 
 void DancingRGBs::readAudio()
 {
-    ADCSRA = 0b11100101;      // set ADC to free running mode and set pre-scalar to 32 (0xe5)
     ADMUX = 0b00000000;       // use pin A0 and external voltage reference
-
+    ADCSRA = 0b11010101;      // set ADC to free running mode and set pre-scalar to 32 (0xe5)
 
     while(!(ADCSRA & 0x10));        // wait for ADC to complete current conversion ie ADIF bit set
-    ADCSRA = 0b11110101 ;               // clear ADIF bit so that ADC can do next operation (0xf5)
-    //Serial.print(ADC);
+
+    //Serial.println(ADC);
     //Serial.print("\t");
     int value = ADC - DC_OFFSET;                 // Read from ADC and subtract DC offset caused value
     audioAnalogValue = value;
     addAmpToCache(value);
-    //Serial.println(value);
-
 }
 
 void DancingRGBs::addAmpToCache(float value)
@@ -32,66 +31,115 @@ void DancingRGBs::addAmpToCache(float value)
     if(i>=CACHE_SIZE)i=0;
 }
 
-float DancingRGBs::getMaxFromCache()
+
+float DancingRGBs::getAvgFromCache()
 {
+    float avg = 0.0f;
     float max = 0.0f;
     for(int i=0; i<CACHE_SIZE; i++)
     {
+        avg+=abs(amp_cache[i]);
         if(abs(amp_cache[i])>max)max = abs(amp_cache[i]);
     }
-    return max;
+    maxInCache = max;
+    return avg/CACHE_SIZE;
+}
+void DancingRGBs::loop()
+{
+    readAudio();
+    getRGB_pwm();
+    showLEDs();
 }
 
-float DancingRGBs::getIntensity()
+void DancingRGBs::getRGB_pwm()
 {
+    unsigned int now = millis();
+    float intensity;
     switch(currentMode)
     {
         case NOLEDS:
         {
-            return 0.0f;
+            intensity = 0;
+            RGB_pwm[0]=intensity;
+            RGB_pwm[1]=intensity;
+            RGB_pwm[2]=intensity;
             break;
         }
 
         case DANCE:
         {
-            float intensity;
-            float maxFromCache = getMaxFromCache();
-            float relAmplitude = audioAnalogValue/maxFromCache;
-            float a, b;
+
+            float avgFromCache = getAvgFromCache();
+            float relAmplitude = abs(audioAnalogValue)/avgFromCache;
+
             
-            if(maxFromCache<minAudioInput) return calmIntensity;
-            a =(maxIntensity-minIntensity)/(maxAmplitude-minAmplitude);
-            b = maxIntensity - a*maxAmplitude;
-            intensity = a * relAmplitude + b;
-            intensity = constrain(intensity,calmIntensity, maxIntensity);
-            return intensity;
+            if(maxInCache<minAudioInput || relAmplitude<A_lowerThreshold) intensity=calmIntensity;
+            else
+            {
+
+                intensity = a * relAmplitude + b;
+                intensity = constrain(intensity,calmIntensity, maxIntensity);
+            }
+            
+
+            RGB_pwm[0]=sin_sq(now,transTime,0)*255*intensity;
+            RGB_pwm[1]=sin_sq(now,transTime,60)*255*intensity;
+            RGB_pwm[2]=sin_sq(now,transTime,120)*255*intensity;
+
             break;
         }
 
         case TRANSITION:
         {
-            return transModeIntensity;
+            intensity = transModeIntensity;
+            RGB_pwm[0]=sin_sq(now,transTime,0)*255*intensity;
+            RGB_pwm[1]=sin_sq(now,transTime,60)*255*intensity;
+            RGB_pwm[2]=sin_sq(now,transTime,120)*255*intensity;
+
+            break;
+        }
+
+        case TORCH:
+        {
+            intensity = 255;
+            RGB_pwm[0]=intensity;
+            RGB_pwm[1]=intensity;
+            RGB_pwm[2]=intensity;
+
             break;
         }
     }
+
+    #ifdef AUDIO_DEBUG
+    Serial.print(audioAnalogValue);
+    Serial.print("\t");
+    Serial.print(getAvgFromCache());
+    Serial.print("\t");
+    Serial.print(maxInCache);
+    Serial.print("\t");
+    Serial.print(minAudioInput);
+    Serial.print("\t");
+    Serial.print(intensity*20);
+    Serial.print("\n");
+    #endif
 }
 
 
-void DancingRGBs::dance()
+void DancingRGBs::showLEDs()
 {
-    unsigned int now = millis();
-    float intensity = getIntensity();
-
-    analogWrite(r_pin,sin_half_sq(now,6000,0)*255*intensity);
-    analogWrite(g_pin,sin_half_sq(now,6000,60)*255*intensity);
-    analogWrite(b_pin,sin_half_sq(now,6000,120)*255*intensity);
-
-    //Serial.println(getMaxFromCache());
+    analogWrite(r_pin,RGB_pwm[0]);
+    analogWrite(g_pin,RGB_pwm[1]);
+    analogWrite(b_pin,RGB_pwm[2]);
 }
 
-double sin_half_sq(long x, unsigned long T, int offset)
+void DancingRGBs::nextMode()
+{
+    currentMode ++;
+    if(currentMode>TORCH)currentMode = 0;
+}
+
+double sin_sq(long x, unsigned long T, int offset)
 {
     double sinus = sin( ( (double)x / (double)T + (double)offset / 360.0) * 2*PI);
-    //if(sinus<0.0)sinus = 0.0;
     return sinus*sinus;
 }
