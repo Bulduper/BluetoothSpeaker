@@ -35,7 +35,7 @@ The general idea was to make a speaker like e.g. JBL Flip in terms of basic prin
 ## First try
 My first design was successfull in some way.
 ![Photo of speaker v1.0](/Photos/speaker_v1.jpg?raw=true  "Version 1.0")
-It worked, played music and basically met almost all the requirements to some extend. And to some extend only...
+It worked, played music and basically met almost all the requirements to some extent. And to some extent only...
 - it was not airtignt enough, a significant amount of air was leaking
 - very inconvenient to assemble
 - not really good looking
