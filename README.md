@@ -1,5 +1,7 @@
 # Bluetooth Speaker
 
+![Photo of final result - v1.0](/Photos/BTSpeakerLights_on.gif?raw=true "Bluetooth Speaker")
+
 ### *Disclaimer*
 
 This is not a regular github repository. You may consider it as a blog entry. Here, in this *readme*, I share my experience with designing a 3d printed bluetooth speaker. The code I uploaded runs on Atmega328P on the main board of the speaker.
@@ -31,12 +33,13 @@ The general idea was to make a speaker like e.g. JBL Flip in terms of basic prin
 - roughly the size of a 0.5l water bottle
 
 ## First try
-My first design was successfull in some way. (photo)
+My first design was successfull in some way.
+![Photo of speaker v1.0](/Photos/speaker_v1.jpg?raw=true  "Version 1.0")
 It worked, played music and basically met almost all the requirements to some extend. And to some extend only...
 - it was not airtignt enough, a significant amount of air was leaking
-- it did not have visible quick fixes, but inside THERE WAS JUST A MESS
 - very inconvenient to assemble
-
+- not really good looking
+- it did not have visible quick fixes, but inside THERE WAS JUST A MESS
  
 
 ## Problems around batteries and charging
@@ -77,7 +80,6 @@ I bought most of the parts on Aliexpress. I had absolutely no confidence they wo
 
 ## Final(?) result
 Now, considering all the difficulties I mentioned here and those I didn't mention, I must say I'm happy with the final result.
-{gif}
 
 [LINK TO THE DEMO VIDEO](https://youtu.be/Gikhf-romf0)
 
