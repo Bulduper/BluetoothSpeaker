@@ -8,12 +8,12 @@ This is not a regular github repository. You may consider it as a blog entry. He
 
 
 ## The goal
-I wanted to have a wireless, convinient bluetooth speaker. So simple! So many people use them. I could have just bought one for like 100$, enjoy a decent sound quality and no maintenance issues.
+I wanted to have a wireless, convenient bluetooth speaker. So simple! So many people use them. I could have just bought one for like 100$, enjoy a decent sound quality and no maintenance issues.
 Boooooring...
 
 >I am curious how difficult it is to design and make a consumer electronics product like those we can buy on the market. *~ my thought, 2018*
 
-The point was to try bulid a complete product with no expensive and advanced technology. My workshop had to be enough!
+The point was to try buliding a complete product with no expensive nor advanced technology. My workshop had to be enough!
 
 Having a 3D printer and some inner motivation I challenged myself to create a bluetooth speaker which would meet the following criteria:
 - 3D printed, as much as possible
@@ -40,16 +40,17 @@ It worked, played music and basically met almost all the requirements to some ex
 - very inconvenient to assemble
 - not really good looking
 - it did not have visible quick fixes, but inside THERE WAS JUST A MESS
- 
+
+All the mentioned drawbacks were too much and so the build was unreliable. 
 
 ## Problems around batteries and charging
-The battery of choice happens to be a Lithium Ion 18650.
+The battery of choice happens to be a Lithium Ion 18650 cell.
 It's rated for 3.7V (max 4.2V) and has a good energy density. Also it is cheap and popular. Lithium Ion cells are kinda fussy, though. To keep them in good condition they need:
 - constant current / constant voltage charging
 - ballanced voltage between cells (if more than one)
 - some protection against dangerously low voltage
 
-I only needed to provide 12 volts to the amplifier and there came the first problem. I could either connect 3 mentioned 18650 cells in series or boost the voltage with a boost converter. The latter solution turned out to be ineffective, as I didn't have (and couldn't find) a step up converter that would provide enough power for such a voltage difference. At higher volume there were power cutoffs.
+I only needed to provide 12 volts to the amplifier and there came the first problem. I could either connect 3 18650 cells in series or boost the voltage with a boost converter. The latter solution turned out to be ineffective, as I didn't have (and couldn't find) a step up converter that would provide enough power for such a voltage difference. At higher volume there were power cutoffs.
 The first idea however ruined my ideal, effortless charging concept. 
 
 Ideally I wanted the speaker to be charged with a standard 5V wall charger. This is easily obtainable with a single lithium cell (opitonally multiple, in parallel). Thus, keeping the series cell connection, I had to abandon this way of charging.
@@ -88,11 +89,11 @@ There are some compromises against my initial plan I accepted such as:
 - still not completely airtight
 - use of hotglue to seal the connectors
 - sound quality is just ok
-- there is some resonance at high tones, mainly caused by loose top cover
+- there is some resonance at high tones, mainly caused by loose top cover and wires inside the case
 - audible noise when no music played 
 
 ## Summary
-This project let me explore so many branches of engineering - starting from 3d modeling, through batteries and charging management, ending up with pcb design and manufacturing.
+This project has let me explore so many branches of engineering - starting from 3d modeling, through batteries and charging management, ending up with pcb design and manufacturing.
 I spent quite a lot of time solving minor problems with the 3d model and tweaking the code and values for LEDs. I got to the point where I still see so much room for improvement, but I'm happy with the result already. I will potentially keep on developing this project when I notice any interest from the community.
 
 I hope I won't get kicked from github for this blog-ish entry ;)
